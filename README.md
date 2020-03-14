@@ -1,4 +1,8 @@
 # CS_330-Assignment-5
+/* The goal of this assignment is socket communication between a server and a client.
+   The first step is for server and cient to communicate (establish connection)
+*/
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +14,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <errno.h>
+#include <iostream>
+using namespace std;
 
 /* Use port number 0 so that we can dynamically assign an unused
  * port number. */
@@ -39,7 +44,8 @@ int main()
   int bbf;
   int num_char=MAXLINE;
   
-  pid_t fork_return;
+  string hi = "Hello";
+  const void* buf = "hi";
   
   /*
    * Build up our network address. Notice how it is made of machine name + port.
@@ -48,7 +54,7 @@ int main()
   /* Clear the data structure (saddr) to 0's. */
   memset(&saddr,0,sizeof(saddr));
 
-  /* Tell our socket to be of the IPv4 internet family (AF_INET). */
+  /* Tell our socket to be of the internet family (AF_INET). */
   saddr.sin_family = AF_INET;
 
   /* Aquire the name of the current host system (the local machine). */
@@ -86,48 +92,12 @@ int main()
   if(listen(s,1) != 0)
     OOPS("listen");
 
-  /* Loop indefinately and wait for events. */
-  for(;;)
-  {
-    /* Wait in the 'accept()' call for a client to make a connection. */
+  /* Wait in the 'accept()' call for a client to make a connection. */
     sfd = accept(s,NULL,NULL);
     if(sfd == -1)
       OOPS("accept");
-    
-    /********************************************************************/  
-    fork_return = fork();
-    if (fork_return == 0)      //child process
-    {
-      /*Read from standard input, write to socket*/
-      while((num_char=read(0,ch,MAXLINE))> 0)
-        if (write(sfd,ch,num_char) < num_char)
-           OOPS("writing");
-
-      close(sfd);
-    }
-    else if (fork_return > 0)    //parent process
-    {
-      /*Read from socket, write to standard output*/
-      while((num_char=read(sfd,ch,MAXLINE))> 0)
-        if (write(1,ch,num_char) < num_char)
-           OOPS("writing");
-
-      close(sfd);
-    }
-    else if (fork_return == -1)
-    {
-      printf("ERROR:\n");
-      switch (errno)
-      {
-         case EAGAIN:
-                 printf("Cannot fork process: System Process Limit Reached\n");
-               case ENOMEM:
-                 printf("Cannot fork process: Out of memory\n");
-      }
-      return 1;
-
-  }
       
+    send(sfd, buf, 2, 0);
+
   return 0;
-}
-}
+} 
