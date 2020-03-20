@@ -3,101 +3,81 @@
    The first step is for server and cient to communicate (establish connection)
 */
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <stdio.h>
 #include <sys/socket.h>
+#include <stdlib.h>
 #include <netinet/in.h>
-#include <netdb.h>
-#include <iostream>
-using namespace std;
+#include <string.h>
+#define PORT 8080
 
-/* Use port number 0 so that we can dynamically assign an unused
- * port number. */
-#define PORTNUM         0
-
-/* Set up the location for the file to display when the daemon (okay,
- * server for you religious types) is contacted by the client. */
-#define BBSD_FILE       "./test.bbs.file"
-/*"/nfs/net/share/ftp/pub/class/330/test.file" */
-
-/* Display error message on stderr and then exit. */
-#define OOPS(msg)       {perror(msg); exit(1);}
-
-#define MAXLINE 512
-
-int main()
+void *display()
 {
-  struct sockaddr_in saddr;       /* socket information */
-  struct hostent *hp;     /* host information */
-  char hostname[256];     /* host computer */
-  socklen_t slen;         /* length socket address */
-  int s;                  /* socket return value */
-  int sfd;                /* socket descriptor returned from accept() */
-  char ch[MAXLINE];       /* character for i/o */
-  FILE *sf;               /* various file descriptors */
-  int bbf;
-  int num_char=MAXLINE;
-  
-  string hi = "Hello";
-  const void* buf = "hi";
-  
-  /*
-   * Build up our network address. Notice how it is made of machine name + port.
-   */
+ printf("|Math|----|Science|----|History|\n");
+    printf("|$10|-----|$10|--------|$10|\n");
+     printf("|$20|---|$20|--------|$20|\n");
 
-  /* Clear the data structure (saddr) to 0's. */
-  memset(&saddr,0,sizeof(saddr));
+  return NULL;
+}
 
-  /* Tell our socket to be of the internet family (AF_INET). */
-  saddr.sin_family = AF_INET;
+int main(int argc, char const *argv[])
+{
+    int server_fd, new_socket, valread;
+    struct sockaddr_in address;
+    int opt = 1;
+    int addrlen = sizeof(address);
+    char buffer[1024] = {0};
+    char *hello = "Hello from server";
+    char *category = "Please select a category";
 
-  /* Aquire the name of the current host system (the local machine). */
-  gethostname(hostname,sizeof(hostname));
+    // Creating socket file descriptor
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
 
-  /* Return misc. host information.  Store the results in the
-   * hp (hostent) data structure.  */
-  hp = gethostbyname(hostname);
+    // Forcefully attaching socket to the port 8080
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+                                                  &opt, sizeof(opt)))
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( PORT );
 
-  /* Copy the host address to the socket data structure. */
-  memcpy(&saddr.sin_addr, hp->h_addr, hp->h_length);
+    // Forcefully attaching socket to the port 8080
+    if (bind(server_fd, (struct sockaddr *)&address,
+                                 sizeof(address))<0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(server_fd, 3) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
+                       (socklen_t*)&addrlen))<0)
+    {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+    /*valread = read( new_socket , buffer, 1024);
+    printf("%s\n",buffer );
+    send(new_socket , hello , strlen(hello) , 0 );
+    printf("Hello message sent\n");*/
 
-  /* Convert the integer Port Number to the network-short standard
-   * required for networking stuff. This accounts for byte order differences.*/
-  saddr.sin_port = htons(PORTNUM);
-  
-  /*
-   * Now that we have our data structure full of useful information,
-   * open up the socket the way we want to use it.
-   */
-  s = socket(AF_INET, SOCK_STREAM, 0);
-  if(s == -1)
-    OOPS("socket");
+   valread = read(new_socket, buffer, 1024);
+   printf("%s\n", buffer);
+   send(new_socket, category, strlen(category), 0);
 
-  /* Register our address with the system. */
-  if(bind(s,(struct sockaddr *)&saddr,sizeof(saddr)) != 0)
-    OOPS("bind");
+   valread = read(new_socket, buffer, 1024);
+   printf(%s\n, buffer);
+   send(new_socket, display, buffer, 1024);
+    return 0;
+}
 
-  /* Display the port that has been assigned to us. */
-  slen = sizeof(saddr);
-  getsockname(s,(struct sockaddr *)&saddr,&slen);
-  printf("Socket assigned: %d\n",ntohs(saddr.sin_port));
-
-  /* Tell socket to wait for input.  Queue length is 1. */
-  if(listen(s,1) != 0)
-    OOPS("listen");
-
-  /* Wait in the 'accept()' call for a client to make a connection. */
-    sfd = accept(s,NULL,NULL);
-    if(sfd == -1)
-      OOPS("accept");
-      
-    send(sfd, buf, 2, 0);
-
-  return 0;
-} 
