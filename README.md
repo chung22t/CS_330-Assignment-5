@@ -12,12 +12,18 @@ Mar. 23
 -client messages for category & difficulty received  by server
 - next step is to continue this process for the other categories and begin writing the questions of the game.
 
-April 5
--Server has asked client what category and difficulty set of questions.
--Client has responded with answers.
--Two cateogries have been created. Server will ask client on questions about science and history.
--I am planning to add a couple more categories including a math and/or geography category
--Current issue right now is trying to get the game to keep looping until client has run out of lives.
+Mar. 30
+-server begins asking questions for client
+-client begins responding to questions
+-current challenge is trying to get the server and client to keep continuing to play the game or exit if the client requests to.
+
+Apr. 5
+-Server has asked client a category of questions.
+-Server will ask client to select one of two categories (science or history).
+-I am planning to add a couple more categories such as math and/or geography.
+-Server will ask client for category and difficulty level. Then server will ask client quesiton.
+-Server will send message to client if they are correct or incorrrect.
+-Current issue right now is to get game to keep looping until client run out of lives
 
 */
 
