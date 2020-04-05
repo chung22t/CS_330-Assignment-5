@@ -11,6 +11,14 @@ Mar. 23
 -server will ask client (player) for category and what difficulty
 -client messages for category & difficulty received  by server
 - next step is to continue this process for the other categories and begin writing the questions of the game.
+
+April 5
+-Server has asked client what category and difficulty set of questions.
+-Client has responded with answers.
+-Two cateogries have been created. Server will ask client on questions about science and history.
+-I am planning to add a couple more categories including a math and/or geography category
+-Current issue right now is trying to get the game to keep looping until client has run out of lives.
+
 */
 
 /* The following is the code for the server (game master) */
@@ -41,12 +49,15 @@ int main(int argc, char const *argv[])
  char *hello = "Hello from server";
  char *category ="Please select s or h";
  int LIVES = 3;
+ int LifeBuffer[1] ={0};
  char answer[MsgLen] = {0};
- int quit = 0;
+ //int quit = 0;
  char *quitMSG = "Do you want to quit?";
  char QuitBuffer[MsgLen] = {0};
-
- //char *PickSciLev = "You selected science. Pick level ($10, $25, $50)";
+ char CAT[1] = {0};
+ char *ClientAnswer;
+ char quit;
+ char *correct = "You are correct!";
 
  // Creating socket file descriptor
  if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -89,7 +100,7 @@ int main(int argc, char const *argv[])
  send(new_socket , hello , strlen(hello) , 0 );
  printf("Hello message sent\n");*/
 
- do
+for (;;)
 {
   valread = read(new_socket, buffer, 1024);
   printf("%s\n", buffer);
@@ -105,71 +116,171 @@ int main(int argc, char const *argv[])
   printf("%s\n", buffer);
   cout << buffer << endl;
 
-
+/**********************************Science*****************************************/
   if (strcmp("s",buffer) == 0)
   {
    //Ask user to select a difficulty level
-   char *PickSciLev = "You selected science. Pick level (enter 1 for $10, 2 for  $25, 3 for $50)";
-   memset (buffer, 0, 1024);
+   char *PickSciLev = "You selected science. Pick level (enter a for $10, b for  $25, c for $50)";
+   //memset (buffer, 0, 1024);
    printf("%s\n", buffer);
    send(new_socket, PickSciLev, strlen(PickSciLev), 0);
 
    //receive the difficulty level input from user
    //memset(buffer, 0, 1024);
-   int count = recv(new_socket, buffer, 1, 0);
-   cout << count;
-   cout << buffer;
+   recv(new_socket, buffer, 1, 0);
+   //cout << "count is " << count;
+   cout << "buffer is " << buffer << endl;
+   printf("buffer is %s\n", buffer);
 
-   if (count == 1)  //if user selects question 1
+   if (strcmp("a", buffer) == 0)  //if client selects a) difficulty
    {
-    //cout << "You selected Science for $10";
-    memset(buffer, 0, 1024);
-    char *SciQ1 = "What is the powerhouse of the cell?";
-    send (new_socket, SciQ1, strlen(SciQ1), 0);
+     cout << "You picked science for $10" << endl;
+     char *SciQ1 = "How many chromosomes do humans have? Enter a)20, b)56, c)23";
+     send(new_socket, SciQ1, strlen(SciQ1), 0);  //send question to client
 
-    int n;
-    string s;
-    memset(answer, 0, MsgLen);
-    //recv(new_socket, answer, MsgLen, 0);
-    cout << answer << endl;
-    while ((n = recv(new_socket, answer, sizeof(answer), 0)) > 0)
-    {
-     //s.append((answer, answer + n));
-     //cout << answer << endl;
-    }
-    cout << answer << endl;
-    if (strcmp("mitochondria", answer) == 0)
-    {
-     cout << "That is correct! The answer is: " << answer <<  endl;
-    }
-    else
-    {
-     LIVES--;
-     cout << "That is incorrect! The answer is: mitochondria" << endl;
-     cout << "You have " << LIVES << " lives left" << endl;
-
-     recv(new_socket, QuitBuffer, 1, 0);
-     cout << QuitBuffer << endl;
-     //ask user if they want to quit
-    /* memset(QuitBuffer, 0, MsgLen); */
-    /* send(new_socket, quitMSG, strlen(quitMSG), 0);
-     int a = recv(new_socket, QuitBuffer, 1, 0);
-     cout << QuitBuffer << endl;
-     cout << a << endl;*/
-
-    /* cin >> quit; */
-    }
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("c", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *SciQ1Ans = "You are incorrect. The correct answer is 23";
+      send(new_socket, SciQ1Ans, strlen(SciQ1Ans), 0);
+     }
    }
-  else
-  {
-  cout <<"Errir";
-  }
+   else if (strcmp("b", buffer) == 0) //if client selects b) difficulty
+   {
+    cout << "You picked science for $25" << endl;
+    char *SciQ2 = "What is the powerhouse of the cell? Enter a)mitochondria, b)cyptoplasma, c)DNA";
+    send(new_socket, SciQ2, strlen(SciQ2), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("a", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *SciQ2Ans = "You are incorrect. The correct answer is mitochondria";
+      send(new_socket, SciQ2Ans, strlen(SciQ2Ans), 0);
+     }
+   }
+   else if (strcmp("c", buffer) == 0) //if client selects c) difficulty
+   {
+    cout << "You picked science for $25" << endl;
+    char *SciQ3 = "What is the symbol of iron on periodic table? a)Ir, b)Fe, c)In";
+    send(new_socket, SciQ3, strlen(SciQ3), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("b", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *SciQ3Ans = "You are incorrect. The correct answer is Fe";
+      send(new_socket, SciQ3Ans, strlen(SciQ3Ans), 0);
+     }
+   }
+  /***********************************************************************/
+
+  /***********************************History*****************************/
+
+
+  /*****************************************************************************/
 }
+else if (strcmp("h", buffer) == 0)
+ {
+   cout << "Hi" << endl;
+   //Ask user to select a difficulty level
+   char *PickHistLev = "You selected history. Pick level (enter a for $10, b for  $25, c for $50)";
+   //memset (buffer, 0, 1024);
+   printf("%s\n", buffer);
+   send(new_socket, PickHistLev, strlen(PickHistLev), 0);
+
+   //receive the difficulty level input from user
+   //memset(buffer, 0, 1024);
+   recv(new_socket, buffer, 1, 0);
+   //cout << "count is " << count;
+   cout << "buffer is " << buffer << endl;
+   printf("buffer is %s\n", buffer);
+
+   if (strcmp("a", buffer) == 0)  //if client selects a) difficulty
+   {
+     cout << "You picked history for $10" << endl;
+     char *HistQ1 = "Who was Canada's first Prime Minister? a)Mackenzie King, b)John A. Macdonald, c)Wilfrid Laurier";
+     send(new_socket, HistQ1, strlen(HistQ1), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("b", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *HistQ1Ans = "You are incorrect. The correct answer is John A. Macdonald";
+      send(new_socket, HistQ1Ans, strlen(HistQ1Ans), 0);
+     }
+   }
+   else if (strcmp("b", buffer) == 0) //if client selects b) difficulty
+   {
+    cout << "You picked history for $25" << endl;
+    char *HistQ2 = "Which country allied with Germany during WW1? a)Japan, b)Italy, c)Austria-Hungary";
+    send(new_socket, HistQ2, strlen(HistQ2), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("c", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *HistQ2Ans = "You are incorrect. The correct answer is Austria-Hungary";
+      send(new_socket, HistQ2Ans, strlen(HistQ2Ans), 0);
+     }
+   }
+   else if (strcmp("c", buffer) == 0) //if client selects c) difficulty
+   {
+    cout << "You picked history for $25" << endl;
+    char *HistQ3 = "Who led Prussia during the Seven Years' War? a)Frederick the Great, b)Otto I, c)Frederick Barbarossa";
+    send(new_socket, HistQ3, strlen(HistQ3), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("a", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *HistQ3Ans = "You are incorrect. The correct answer is Frederick the Great";
+      send(new_socket, HistQ3Ans, strlen(HistQ3Ans), 0);
+     }
+   }
+ }
  else
  {
   cout << "Incorrect";
  }
 }
-while(quit = 0);
+
  return 0;
 }
