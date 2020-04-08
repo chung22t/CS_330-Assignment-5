@@ -25,9 +25,17 @@ Apr. 5
 -Server will send message to client if they are correct or incorrrect.
 -Current issue right now is to get game to keep looping until client run out of lives
 
+Apr 7
+-New category (geography) has been included in the game.
+-a loop has been created so client and keep playing game until they run out of lives.
+-Current issue is trying to get the game to exit. Once client answers question wrong, the game on client side is in
+ infinite loop even if a condition was placed on loop.
+
 */
 
 /* The following is the code for the server (game master) */
+
+/*****************************************SERVER********************************/
 
 #include <unistd.h>
 #include <stdio.h>
@@ -53,7 +61,7 @@ int main(int argc, char const *argv[])
  int addrlen = sizeof(address);
  char buffer[1024] = {0};
  char *hello = "Hello from server";
- char *category ="Please select s or h";
+ char *category ="Please select s (Science), h(history). g(geography)";
  int LIVES = 3;
  int LifeBuffer[1] ={0};
  char answer[MsgLen] = {0};
@@ -65,6 +73,8 @@ int main(int argc, char const *argv[])
  char quit;
  char *correct = "You are correct!";
 
+for(;;)
+{
  // Creating socket file descriptor
  if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
  {
@@ -106,8 +116,8 @@ int main(int argc, char const *argv[])
  send(new_socket , hello , strlen(hello) , 0 );
  printf("Hello message sent\n");*/
 
-for (;;)
-{
+/*for (;;)
+{*/
   valread = read(new_socket, buffer, 1024);
   printf("%s\n", buffer);
   send(new_socket, category, strlen(category), 0);
@@ -202,8 +212,6 @@ for (;;)
 
   /***********************************History*****************************/
 
-
-  /*****************************************************************************/
 }
 else if (strcmp("h", buffer) == 0)
  {
@@ -282,6 +290,83 @@ else if (strcmp("h", buffer) == 0)
      }
    }
  }
+ else if (strcmp("g", buffer) == 0)
+ {
+  cout << "You selected geograpghy" << endl;
+  //Ask user to select a difficulty level
+   char *PickGeoLev = "You selected geography. Pick level (enter a for $10, b for  $25, c for $50)";
+   //memset (buffer, 0, 1024);
+   printf("%s\n", buffer);
+   send(new_socket, PickGeoLev, strlen(PickGeoLev), 0);
+
+   //receive the difficulty level input from user
+   //memset(buffer, 0, 1024);
+   recv(new_socket, buffer, 1, 0);
+   //cout << "count is " << count;
+   cout << "buffer is " << buffer << endl;
+   printf("buffer is %s\n", buffer);
+
+   if (strcmp("a", buffer) == 0)  //if client selects a) difficulty
+   {
+     cout << "You picked geography for $10" << endl;
+     char *GeoQ1 = "What is the highest point in the world? a)Mount Logan, b)Mount Everest, c)Mount Kilimanjaro";
+     send(new_socket, GeoQ1, strlen(GeoQ1), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("b", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *GeoQ1Ans = "You are incorrect. The correct answer is Mount Everest";
+      send(new_socket, GeoQ1Ans, strlen(GeoQ1Ans), 0);
+     }
+   }
+   else if (strcmp("b", buffer) == 0) //if client selects b) difficulty
+   {
+    cout << "You picked geography for $25" << endl;
+    char *GeoQ2 = "What is the capital of Brazil? a)Brasilia, b)Rio de Janeiro, c)Sao Paulo";
+    send(new_socket, GeoQ2, strlen(GeoQ2), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("a", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *GeoQ2Ans = "You are incorrect. The correct answer is Brasilia";
+      send(new_socket, GeoQ2Ans, strlen(GeoQ2Ans), 0);
+     }
+   }
+   else if (strcmp("c", buffer) == 0) //if client selects c) difficulty
+   {
+    cout << "You picked history for $25" << endl;
+    char *GeoQ3 = "Which country shared a border with Slovenia? a)Germany, b)Poland, c)Croatia";
+    send(new_socket, GeoQ3, strlen(GeoQ3), 0);  //send question to client
+
+     recv(new_socket, buffer, 1, 0);  //receive client response
+     if (strcmp("c", buffer) == 0)
+     {
+      cout << "You are correct! " << endl;
+      send(new_socket, correct, strlen(correct), 0);
+     }
+     else
+     {
+      LIVES--;
+      cout << "You are incorrect! You have lives: " << LIVES << endl;
+      char *GeoQ3Ans = "You are incorrect. The correct answer is Croatia";
+      send(new_socket, GeoQ3Ans, strlen(GeoQ3Ans), 0);
+     }
+   }
+ }
  else
  {
   cout << "Incorrect";
@@ -290,3 +375,4 @@ else if (strcmp("h", buffer) == 0)
 
  return 0;
 }
+
